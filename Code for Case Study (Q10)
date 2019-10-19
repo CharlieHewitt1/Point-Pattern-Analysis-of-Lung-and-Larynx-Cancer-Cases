@@ -1,0 +1,138 @@
+# Question 10 – ‘Critically review the application of point-pattern analysis in ecology including examples’ 
+# This case study used a pre-loaded dataset from the spatstat.data library - it shows the locations and botanical classification 
+# of trees in Lansing Woods, Mi, USA. 
+
+
+#load in the maple tree data :
+trees <-data("lansing") 
+maple <- (split(lansing)$maple) 
+plot(maple, pch=16)
+
+#identify the data frame as a point pattern 
+# tell spatstat the dimensionsn of the area of interest (max/min of X and Y coordinates from summary command)
+yrange <- c(0, 1)
+xrange <- c(0,1) 
+maple.ppp <- ppp(maple$x, maple$y, xrange, yrange)
+plot(maple.ppp, pch=16) 
+
+#construct 10x10 cell quadrat 
+ncols <-10 
+nrows <-10
+bins <- quadratcount(maple.ppp, ncols, nrows) 
+plot(bins)
+
+# plot a smarter version of bins 
+maple_inten <- intensity(bins, image=TRUE) 
+plot(maple_inten)
+
+#estimating the value of sigma
+sigma_est <- bw.ppl(maple.ppp) 
+sigma_est
+
+# employ kernel estimation to calculate a map of kernel densities of maple trees
+# use the previously estimated value of sigma 
+maple_den <-density(maple.ppp, sigma = 0.05124966)
+plot(maple_den)
+
+#3D visualisation of the kernel intensities 
+persp(maple_den, col="red", theta=90)
+
+# the 3d visualisation from different angles 
+par(mfrow=c(2,2)) 
+persp(maple_den, col="green", theta=90)
+persp(maple_den, col="green", theta=180)
+persp(maple_den, col="green", theta=270) 
+persp(maple_den, col="green", theta=360)
+
+# G-Function 
+Gd_Maple <-Gest(maple.ppp) 
+plot(Gd_Maple) 
+
+# F-Function 
+Fd_Maple <- Fest(maple.ppp) 
+plot(Fd_Maple) 
+
+# K-Function 
+Ks_Maple <- Kest(maple.ppp) 
+plot(Ks_Maple) 
+
+# L-Function 
+Ls_Maple <- Lest(maple.ppp) 
+plot(Ls_Maple)
+
+# Calculate a confidence envelope for K(d) 
+Ks_Maple_env. <- envelope(maple.ppp,Kest, nsim=99, verbose=FALSE)
+plot(Ks_Maple_env.)
+
+# Calculate a confidence envelope for L(d) 
+Ls_Maple_env. <- envelope(maple.ppp, Lest, nsim=99, verbose=FALSE) 
+plot(Ls_Maple_env.)
+
+
+###################### HICKORY #################
+trees <-data("lansing") 
+hickory <- (split(lansing)$hickory) 
+plot(hickory)
+
+yrange <- c(0, 1) 
+xrange <- c(0,1) 
+hickory.ppp <- ppp(hickory$x, hickory$y, xrange, yrange)
+hickory <- unique(hickory.ppp) 
+plot(hickory, pch=16)
+
+ncols <-10 
+nrows <-10 
+bins2 <- quadratcount(hickory, ncols, nrows) 
+plot(bins2) 
+
+# plot a smarter version of bins 
+hickory_inten <- intensity(bins2, image=TRUE) 
+hickory_inten
+plot(hickory_inten) 
+
+#estimating the value of sigma 
+sigma_est <- bw.ppl(hickory) 
+sigma_est
+
+# employ kernel estimation to calculate a map of kernel densities of hickory trees
+# use the previously estimated value of sigma 
+hickory_den <-density(hickory, sigma = 0.03309218)
+plot(hickory_den)
+
+#3D visualisation of the kernel intensities 
+persp(hickory_den, col="red", theta=90)
+
+# the 3d visualisation from different angles 
+par(mfrow=c(2,2)) persp(hickory_den, col="green", theta=90) 
+persp(hickory_den, col="green", theta=180) 
+persp(hickory_den, col="green", theta=270) 
+persp(hickory_den, col="green", theta=360)
+
+# calculate nearest neighbour cumulative empirical probablity distribution G(d) 
+Gd_Hickory <-Gest(hickory) 
+plot(Gd_Hickory) 
+
+# empty space function 
+Fd_Hickory <- Fest(hickory) 
+plot(Fd_Hickory) 
+
+# K-Function 
+Ks_Hickory <- Kest(hickory) 
+plot(Ks_Hickory) 
+
+# L-Function 
+Ls_Hickory <- Lest(hickory) 
+plot(Ls_Hickory)
+
+# Calculate a confidence envelope for K(d) 
+Ks_Hickory_env. <- envelope(hickory,Kest, nsim=99, verbose=FALSE)
+plot(Ks_Hickory_env.) 
+
+# Calculate a confidence envelope for L(d) 
+Ls_Hickory_env. <- envelope(hickory, Lest, nsim=99, verbose=FALSE) 
+plot(Ls_Hickory_env.) 
+
+plot(hickory, boundary=T, pch=16) 
+points(maple.ppp, col="green", pch=16)
+
+
