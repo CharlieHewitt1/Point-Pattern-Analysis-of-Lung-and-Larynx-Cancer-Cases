@@ -1,0 +1,243 @@
+######### Question 1 #########
+# Does the pattern of larynx cancer appear to cluster, or is it completely random? 
+# Based on this very simple map, can you see any evidence to suggest that cases of larynx cancer cluster around the incinerator?
+
+#load in the libraries 
+library(spatstat) 
+library(ggplot2)
+
+#Read in the data 
+larynx.can <- read.csv("LARYNX.csv")
+lung.can <- read.csv("LUNG.csv")
+incin.xy <- read.csv("INCIN.csv")
+
+# extract simple descriptive statistics about larynx cancer data set
+str(larynx.can)
+summary(larynx.can)
+
+# Identify the data frame as a point pattern
+# Tell spatstat the dimensionsn of the area of interest (max/min of X and Y coordinates from summary command)
+yrange <- c(413295, 428827)
+xrange <- c(348273,360779)
+larynx.ppp <- ppp(larynx.can$Easting, larynx.can$Northing, xrange, yrange)
+
+# summarise and plot point pattern data
+summary(larynx.ppp)
+plot(larynx.ppp, pch=16)
+
+# add the location of the incinerator as a cross in a different colour
+incin.ppp <-ppp(incin.xy$Easting, incin.xy$Northing, xrange, yrange)
+points(incin.ppp, col="red", pch=3)
+
+
+
+
+
+######### Question 2 #########
+# Do the kernel density maps display any areas of particularly high intensity? 
+# What is the apparent intensity of cancer cases around the site of the incinerator?
+
+
+# construct 10x10 cell quadrat
+ncols <-10
+nrows <-10
+bins <- quadratcount(larynx.ppp, ncols, nrows) 
+plot(bins)
+
+# plot a smarter version of bins 
+lar_inten <- intensity(bins, image=TRUE) 
+lar_inten
+plot(lar_inten)
+
+# estimating the value of sigma 
+sigma_est <- bw.ppl(larynx.ppp)
+sigma_est
+
+# employ kernel estimation to calculate a map of kernel densities of larynx cancers 
+# use the previously estimated value of sigma
+lar_den <-density(larynx.ppp, sigma = 1149.95)
+plot(lar_den)
+
+# overlay the original point observations on to the image as small crosses
+points (larynx.ppp, pch=3, col="white")
+
+# add in the incinerator 
+points(incin.ppp)
+
+#3D visualisation of the kernel intensities
+persp(lar_den, col="red", theta=90)
+
+# the 3d visualisation from different angles
+par(mfrow=c(2,2)) 
+persp(lar_den, col="green", theta=90) 
+persp(lar_den, col="green", theta=180)
+persp(lar_den, col="green", theta=270)
+persp(lar_den, col="green", theta=360)
+
+
+
+########## Question 3 #############
+# Examine the functions G(d) and F(d). What do they tell you about the pattern of larynx cancers from your data?
+
+# calculate nearest neighbour cumulative empirical probablity distribution G(d) 
+Gd <-Gest(larynx.ppp) 
+plot(Gd)
+
+# calculate the empty space function 
+Fd <- Fest(larynx.ppp) 
+plot(Fd)
+
+######### Question 4 ############
+# Looking at the K-function graph plotted for a range of distances (plotted along the X-axis) 
+# compared against the value of K for a CSR-model – is there any evidence of clustering and if so, at what distances?
+
+#calculate the K-function to overcome limitations of G(d) and F(d) functions
+Ks <- Kest(larynx.ppp)
+#Plot the object "Ks"
+plot(Ks)
+
+######### Question 5 ########
+# How does K(d) compare with L(d) and what do they say about the patterns of cancers?
+
+#Plot the statistics L(d) 
+Ls <- Lest(larynx.ppp) 
+plot(Ls)
+
+# Calculate a confidence envelope for K(d) 
+Kd_Envelope <- envelope(larynx.ppp,Kest, nsim=99, verbose=FALSE) 
+plot(Kd_Envelope)
+
+# Calculate a confidence envelope for L(d) 
+Ld_Envelope <- envelope(larynx.ppp, Lest, nsim=99, verbose=FALSE) 
+plot(Ld_Envelope)
+
+######### Question 6 ########
+# What assumptions have you effectively made about the distribution of the population 
+# and what conclusions might we wrongly reach, regarding the role of the incinerator in causing cancer,
+# if we do not account for this factor?
+# (didn't require code to answer) 
+
+######### Question 7 ########
+# From the results of the statistical analyses above, how does the pattern of lung cancers compare to that of larynx cancers? 
+
+### preparing the data #### 
+#load in the libraries
+library(spatstat)
+library(ggplot2)
+
+# Read the data in 
+larynx.can <- read.csv("LARYNX.csv") 
+lung.can <- read.csv("LUNG.csv") 
+incin.xy <- read.csv("INCIN.csv")
+
+# extract simple descriptive statistics about lung cancer data set 
+str(lung.can)
+summary(lung.can)
+
+# identify the data frame as a point pattern 
+# tell spatstat the dimensions of the area of interest (max/min of X and Y coordinates from summary command)
+yrange <- c(413295, 428827)
+xrange <- c(348273,360779)
+lung.ppp <- ppp(lung.can$Easting, lung.can$Northing, xrange, yrange)
+larynx.ppp <- ppp(larynx.can$Easting, larynx.can$Northing, xrange, yrange)
+
+#### plot the points #####
+# summary and plot 
+summary(lung.ppp)
+plot(lung.ppp, pch=16)
+
+#add the location of the incinerator as a cross in a different colour
+incin.ppp <-ppp(incin.xy$Easting, incin.xy$Northing, xrange, yrange)
+points(incin.ppp, col="red", pch=3)
+
+#### Kernel Density Estimation #### 
+#construct 10x10 cell quadrat 
+ncols <-10 
+nrows <-10 
+bins <- quadratcount(lung.ppp, ncols, nrows) 
+plot(bins)
+
+# plot a smarter version of bins
+lung_inten <- intensity(bins, image=TRUE) 
+lung_inten
+plot(lung_inten)
+
+#estimating the value of sigma 
+sigma_est <- bw.ppl(lung.ppp) 
+sigma_est
+
+# employ kernel estimation to calculate a map of kernel densities of lung cancers
+# use the previously estimated value of sigma
+lung_den <-density(lung.ppp, sigma = 309.0253)
+plot(lung_den)
+
+#overlay the original point observations on to the image as small crosses
+points (lung.ppp, pch=3, col="white")
+
+#add in the incinerator
+points(incin.ppp)
+
+#3D visualisation of the kernel intensities
+persp(lung_den, col="red", theta=90)
+
+# the 3d visualisation from different angles 
+par(mfrow=c(2,2)) 
+persp(lung_den, col="green", theta=90) 
+persp(lung_den, col="green", theta=180)
+persp(lung_den, col="green", theta=270) 
+persp(lung_den, col="green", theta=360)
+
+#### Second Order Analysis #### 
+# calculate nearest neighbour cumulative empirical probablity distribution G(d) (G-function)
+Gd_Lung <-Gest(lung.ppp) 
+plot(Gd_Lung)
+
+# empty space function (F-function) 
+Fd_Lung <- Fest(lung.ppp)
+plot(Fd_Lung)
+
+#calculate the K-function to overcome limitations of G(d) and F(d) functions 
+#K-function 
+Kd_Lung <- Kest(lung.ppp)
+plot(Kd_Lung)
+
+#Plot the statistics L(d) 
+# L-function 
+Ls <- Lest(lung.ppp) 
+plot(Ls)
+
+# Calculate a confidence envelope for K(d) 
+Kd_Lung_env. <- envelope(lung.ppp,Kest, nsim=99, verbose=FALSE) 
+plot(Kd_Lung_env.)
+
+# Calculate a confidence envelope for L(d) 
+Ld_Lung_env. <- envelope(lung.ppp, Lest, nsim=99, verbose=FALSE) 
+plot(Ld_Lung_env.)
+
+##### Question 8 #########
+# Does the bivariate K function help to understand the pattern of cancers in this example, and if so, in what ways?
+# (code continues from question 7 code) 
+
+# examining the pattern of larynx cancers using lung cancers as a control by exploring a plot of both
+plot(larynx.ppp, boundary=T)
+points(lung.ppp, col="green")
+
+#exploring a bivariate K (or L) function:
+# the following adds an extra variable to each of the files
+lung.can$code <-2 
+larynx.can$code <- 1
+
+# the files are merged as they have the same variables.
+all.can <- rbind(larynx.can, lung.can)
+
+#recalcualate the bounding area for both files: 
+yrange <-c(412437, 428987)
+xrange <-c(346475, 364435)
+
+#calculate the bivariate K function, look at the resulting object, then plot: 
+all.ppp <-ppp(all.can$Easting, all.can$Northing, xrange, yrange, marks= as.factor(all.can$code)) 
+kC = Kcross(all.ppp)
+plot(kC)
+
+
+
